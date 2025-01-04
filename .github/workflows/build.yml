@@ -26,27 +26,41 @@ jobs:
         pip install pyinstaller
         pip install opencv-python
         pip install pillow
+        pip list
     
-    - name: List files
+    - name: Check environment
       run: |
+        echo "Current directory:"
         pwd
+        echo "\nDirectory contents:"
         ls -la
-        echo "Python location:"
-        which python
-        echo "PyInstaller location:"
-        which pyinstaller
+        echo "\nPython version:"
+        python --version
+        echo "\nPyInstaller version:"
+        pyinstaller --version
+        echo "\nChecking Python files:"
+        cat main.py
+        echo "\nChecking imports:"
+        python -c "import cv2; import tkinter; print('All imports successful')"
     
     - name: Build App
       run: |
-        pyinstaller --name "视频水印区域选择工具" --windowed main.py
+        echo "Starting build process..."
+        pyinstaller --name "视频水印区域选择工具" --windowed main.py --debug all
+        echo "\nChecking dist directory:"
         ls -la dist
+        echo "\nChecking build logs:"
+        cat build/视频水印区域选择工具/*.log || echo "No log file found"
+        echo "\nCreating zip file:"
         cd dist
         zip -r watermark-selector-mac.zip "视频水印区域选择工具.app"
+        ls -la
     
     - name: Release
       uses: softprops/action-gh-release@v1
       if: startsWith(github.ref, 'refs/tags/')
       with:
         files: dist/watermark-selector-mac.zip
+        draft: true
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
