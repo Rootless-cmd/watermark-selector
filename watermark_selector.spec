@@ -87,5 +87,5 @@ else:  # Windows
         target_arch=None,
         codesign_identity=None,
         entitlements_file=None,
-        icon='icon.ico',  # 使用生成的ICO图标
+        icon='icon.ico'  # 如果有图标的话
     )
