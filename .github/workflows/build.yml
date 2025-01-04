@@ -7,18 +7,13 @@ on:
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [windows-latest, macos-latest]
+    runs-on: macos-latest
     permissions:
       contents: write
     
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
     
     - name: Set up Python
       uses: actions/setup-python@v5
@@ -28,41 +23,30 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install pyinstaller opencv-python pillow
+        pip install pyinstaller
+        pip install opencv-python
+        pip install pillow
     
-    - name: Verify files
+    - name: List files
       run: |
-        echo "Repository contents:"
+        pwd
         ls -la
-        echo "Checking spec file:"
-        cat watermark_selector.spec
+        echo "Python location:"
+        which python
+        echo "PyInstaller location:"
+        which pyinstaller
     
-    - name: Build Windows
-      if: matrix.os == 'windows-latest'
-      shell: cmd
+    - name: Build App
       run: |
-        echo "Building for Windows..."
-        dir
-        pyinstaller watermark_selector.spec
-        dir dist
-        cd dist
-        7z a watermark-selector-windows.zip "视频水印区域选择工具.exe"
-    
-    - name: Build macOS
-      if: matrix.os == 'macos-latest'
-      run: |
-        echo "Building for macOS..."
-        ls -la
-        pyinstaller watermark_selector.spec
+        pyinstaller --name "视频水印区域选择工具" --windowed main.py
         ls -la dist
         cd dist
         zip -r watermark-selector-mac.zip "视频水印区域选择工具.app"
     
-    - name: Create Release
+    - name: Release
       uses: softprops/action-gh-release@v1
       if: startsWith(github.ref, 'refs/tags/')
       with:
-        files: |
-          dist/watermark-selector-*.zip
+        files: dist/watermark-selector-mac.zip
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
